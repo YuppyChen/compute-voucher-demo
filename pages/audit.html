@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>审核页面</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            padding: 0;
+            background-color: var(--bg-color);
+            margin: 0;
+        }
+        .page-container {
+            max-width: 100%;
+            margin: 0;
+        }
+        
+        /* 顶部操作栏 */
+        .top-action-bar {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+        .btn-top-action {
+            padding: 8px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-white);
+            color: var(--text-primary);
+        }
+        .btn-top-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        .btn-top-action.danger {
+            background-color: var(--error-color);
+            color: white;
+            border-color: var(--error-color);
+        }
+        .btn-top-action.danger:hover {
+            background-color: #ff7875;
+        }
+        .btn-top-action.success {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+        .btn-top-action.success:hover {
+            background-color: #73d13d;
+        }
+        
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        .audit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .audit-status {
+            font-size: 16px;
+            padding: 8px 16px;
+        }
+        .info-section {
+            margin-bottom: 24px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .info-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .info-value {
+            font-size: 15px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .file-preview {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            background: #fafafa;
+            margin-top: 12px;
+        }
+        .file-preview-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--bg-white);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+        }
+        .file-preview-item:last-child {
+            margin-bottom: 0;
+        }
+        .file-preview-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .file-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-color);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .file-name {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+        .audit-form {
+            margin-top: 24px;
+        }
+        .reject-reason {
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部操作栏 -->
+    <div class="top-action-bar">
+        <button type="button" class="btn-top-action danger" onclick="showRejectReason()">拒绝</button>
+        <button type="submit" class="btn-top-action success" form="auditForm">通过审核</button>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="audit-header">
+            <div>
+                <h1 class="page-title">核销审核</h1>
+                <p class="page-description">核销单号: VER20240315003</p>
+            </div>
+            <span class="badge badge-warning audit-status">待审核</span>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">核销信息</h2>
+            </div>
+            <div class="info-section">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">用户ID</span>
+                        <span class="info-value">U345678</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">用户姓名</span>
+                        <span class="info-value">李四</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">活动名称</span>
+                        <span class="info-value">2024年度算力券促销活动</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">券面金额</span>
+                        <span class="info-value">¥100</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">订单号</span>
+                        <span class="info-value">ORD20240315008</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">订单金额</span>
+                        <span class="info-value">¥520</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">核销时间</span>
+                        <span class="info-value">2024-03-15 11:45:30</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">订单状态</span>
+                        <span class="info-value"><span class="badge badge-success">待支付</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">申请信息</h2>
+            </div>
+            <div class="info-section">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">申请人姓名</span>
+                        <span class="info-value">李四</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">联系电话</span>
+                        <span class="info-value">13900139000</span>
+                    </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">所属公司</span>
+                        <span class="info-value">YY数据科技有限公司</span>
+                    </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">申请用途</span>
+                        <span class="info-value">AI模型训练</span>
+                    </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">申请说明</span>
+                        <span class="info-value" style="line-height: 1.6;">我公司正在进行AI模型训练项目，需要使用GPU算力资源。申请使用100元算力券用于购买A100 GPU资源包，预计使用时长24小时。</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">提交材料</h2>
+            </div>
+            <div class="file-preview">
+                <div class="file-preview-item">
+                    <div class="file-preview-info">
+                        <div class="file-icon">PDF</div>
+                        <div>
+                            <div class="file-name">营业执照.pdf</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">2.3 MB</div>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="#" class="action-link">查看</a>
+                        <a href="#" class="action-link" style="margin-left: 12px;">下载</a>
+                    </div>
+                </div>
+                <div class="file-preview-item">
+                    <div class="file-preview-info">
+                        <div class="file-icon">DOC</div>
+                        <div>
+                            <div class="file-name">项目说明文档.docx</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">1.8 MB</div>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="#" class="action-link">查看</a>
+                        <a href="#" class="action-link" style="margin-left: 12px;">下载</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">审核意见</h2>
+            </div>
+            <form class="audit-form" id="auditForm">
+                <div class="form-group">
+                    <label class="form-label">审核备注</label>
+                    <textarea class="form-textarea" placeholder="请输入审核意见（可选）">材料齐全，符合活动规则，订单金额满足使用门槛，同意核销。</textarea>
+                </div>
+                <div class="form-group reject-reason" style="display: none;">
+                    <label class="form-label required">拒绝原因</label>
+                    <textarea class="form-textarea" placeholder="请详细说明拒绝原因"></textarea>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showRejectReason() {
+            const rejectReason = document.querySelector('.reject-reason');
+            if (rejectReason.style.display === 'none') {
+                rejectReason.style.display = 'block';
+            } else {
+                rejectReason.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
+

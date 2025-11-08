@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>活动创建</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            padding: 0;
+            background-color: var(--bg-color);
+            margin: 0;
+        }
+        .page-container {
+            max-width: 100%;
+            margin: 0;
+        }
+        
+        /* 顶部操作栏 */
+        .top-action-bar {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+        .btn-top-action {
+            padding: 8px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-white);
+            color: var(--text-primary);
+        }
+        .btn-top-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        .btn-top-action.primary {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .btn-top-action.primary:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .form-label.required::after {
+            content: ' *';
+            color: var(--error-color);
+        }
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+        }
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .form-textarea.large {
+            min-height: 200px;
+        }
+        .char-limit {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 24px;
+            margin-top: 8px;
+        }
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .radio-item input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .radio-item label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .upload-area {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: #f0f7ff;
+        }
+        .upload-icon {
+            font-size: 32px;
+            color: var(--text-disabled);
+            margin-bottom: 8px;
+        }
+        .upload-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .upload-hint {
+            font-size: 12px;
+            color: var(--text-disabled);
+            margin-top: 8px;
+        }
+        .unit-label {
+            display: inline-block;
+            margin-left: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .input-with-unit {
+            display: flex;
+            align-items: center;
+        }
+        .input-with-unit input {
+            flex: 1;
+        }
+        .rich-text-toolbar {
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            padding: 8px;
+            background: #fafafa;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .toolbar-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        .toolbar-btn:hover {
+            background: #e6f7ff;
+            color: var(--primary-color);
+        }
+        .rich-text-area {
+            border: 1px solid var(--border-color);
+            border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+            min-height: 200px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部操作栏 -->
+    <div class="top-action-bar">
+        <button type="button" class="btn-top-action">保存草稿</button>
+        <button type="submit" class="btn-top-action primary" form="activityForm">创建活动</button>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h1 class="page-title">创建算力券活动</h1>
+            <p class="page-description">填写活动信息，创建新的算力券活动</p>
+        </div>
+
+        <form id="activityForm">
+            <!-- 基本信息 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">基本信息</h2>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label required">活动名称</label>
+                    <input type="text" class="form-input" placeholder="活动名称">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">活动图片</label>
+                    <div class="upload-area">
+                        <div class="upload-icon">+</div>
+                        <div class="upload-text">Upload</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">活动摘要</label>
+                    <textarea class="form-textarea" placeholder="请输入活动摘要"></textarea>
+                    <div class="char-limit">最长300个字符,150个汉字</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">活动时间</label>
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <input type="datetime-local" class="form-input" placeholder="起始时间">
+                        </div>
+                        <div style="display: flex; align-items: center; padding: 0 8px;">
+                            <span style="color: var(--text-secondary);">至</span>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <input type="datetime-local" class="form-input" placeholder="结束时间">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 补贴和申请规则 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">补贴和申请规则</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">补贴对象</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="target-supplier" name="subsidy-target" value="supplier">
+                            <label for="target-supplier">供给方</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="target-user" name="subsidy-target" value="user" checked>
+                            <label for="target-user">使用方</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">申领方式</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="method-claim-first" name="application-method" value="claim-first">
+                            <label for="method-claim-first">先领后用</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="method-one-click" name="application-method" value="one-click" checked>
+                            <label for="method-one-click">一键申报</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="method-use-first" name="application-method" value="use-first">
+                            <label for="method-use-first">先用后报</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">返还方式</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="return-cash" name="reimbursement-method" value="cash" checked>
+                            <label for="return-cash">现金</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="return-voucher" name="reimbursement-method" value="voucher">
+                            <label for="return-voucher">算力券</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="return-resource" name="reimbursement-method" value="resource">
+                            <label for="return-resource">资源</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 补贴金额 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">补贴金额</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">总补贴额度</label>
+                    <div class="input-with-unit">
+                        <input type="number" class="form-input" placeholder="总补贴额度">
+                        <span class="unit-label">元</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">补贴比例</label>
+                    <div class="input-with-unit">
+                        <input type="number" class="form-input" placeholder="补贴比例">
+                        <span class="unit-label">%</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">同一主体补贴最高额度</label>
+                    <div class="input-with-unit">
+                        <input type="number" class="form-input" placeholder="同一主体补贴最高额度">
+                        <span class="unit-label">元</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">单次补贴最高额度</label>
+                    <div class="input-with-unit">
+                        <input type="number" class="form-input" placeholder="单次补贴最高额度">
+                        <span class="unit-label">元</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 详细描述和附件 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">详细描述和附件</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">算力券活动介绍</label>
+                    <div class="rich-text-toolbar">
+                        <button type="button" class="toolbar-btn" title="字体大小">A</button>
+                        <button type="button" class="toolbar-btn" title="粗体"><strong>B</strong></button>
+                        <button type="button" class="toolbar-btn" title="斜体"><em>I</em></button>
+                        <button type="button" class="toolbar-btn" title="下划线">U</button>
+                        <button type="button" class="toolbar-btn" title="左对齐">⬅</button>
+                        <button type="button" class="toolbar-btn" title="居中">⬌</button>
+                        <button type="button" class="toolbar-btn" title="右对齐">➡</button>
+                        <button type="button" class="toolbar-btn" title="无序列表">•</button>
+                        <button type="button" class="toolbar-btn" title="有序列表">1.</button>
+                    </div>
+                    <textarea class="form-textarea rich-text-area large" placeholder="请输入算力券活动介绍"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">算力券申领流程</label>
+                    <div class="rich-text-toolbar">
+                        <button type="button" class="toolbar-btn" title="字体大小">A</button>
+                        <button type="button" class="toolbar-btn" title="粗体"><strong>B</strong></button>
+                        <button type="button" class="toolbar-btn" title="斜体"><em>I</em></button>
+                        <button type="button" class="toolbar-btn" title="下划线">U</button>
+                        <button type="button" class="toolbar-btn" title="左对齐">⬅</button>
+                        <button type="button" class="toolbar-btn" title="居中">⬌</button>
+                        <button type="button" class="toolbar-btn" title="右对齐">➡</button>
+                        <button type="button" class="toolbar-btn" title="无序列表">•</button>
+                        <button type="button" class="toolbar-btn" title="有序列表">1.</button>
+                    </div>
+                    <textarea class="form-textarea rich-text-area large" placeholder="请输入算力券申领流程"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">附件说明</label>
+                    <div class="rich-text-toolbar">
+                        <button type="button" class="toolbar-btn" title="字体大小">A</button>
+                        <button type="button" class="toolbar-btn" title="粗体"><strong>B</strong></button>
+                        <button type="button" class="toolbar-btn" title="斜体"><em>I</em></button>
+                        <button type="button" class="toolbar-btn" title="下划线">U</button>
+                        <button type="button" class="toolbar-btn" title="左对齐">⬅</button>
+                        <button type="button" class="toolbar-btn" title="居中">⬌</button>
+                        <button type="button" class="toolbar-btn" title="右对齐">➡</button>
+                        <button type="button" class="toolbar-btn" title="无序列表">•</button>
+                        <button type="button" class="toolbar-btn" title="有序列表">1.</button>
+                    </div>
+                    <textarea class="form-textarea rich-text-area" placeholder="请输入附件说明"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">附件样本</label>
+                    <div class="upload-area">
+                        <div class="upload-icon">+</div>
+                        <div class="upload-text">点击上传</div>
+                    </div>
+                    <div class="upload-hint">单个附件最大限制 20</div>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

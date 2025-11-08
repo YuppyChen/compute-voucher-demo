@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>算力券活动状态机图</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            padding: 24px;
+            background-color: var(--bg-color);
+        }
+        .image-container {
+            text-align: center;
+            background: var(--bg-white);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .image-container:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .state-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+        }
+        .image-hint {
+            margin-top: 16px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .image-hint::before {
+            content: '🔍 ';
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            animation: fadeIn 0.3s;
+            overflow: hidden;
+        }
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .modal-image-wrapper {
+            position: relative;
+            transform-origin: center center;
+            transition: transform 0.1s ease-out;
+            cursor: grab;
+        }
+        .modal-image-wrapper.dragging {
+            cursor: grabbing;
+        }
+        .modal-image {
+            max-width: none;
+            max-height: none;
+            width: auto;
+            height: auto;
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        .modal-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            z-index: 1001;
+        }
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-sm);
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .zoom-indicator {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-sm);
+            color: white;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            min-width: 80px;
+            text-align: center;
+        }
+        .modal-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 14px;
+            opacity: 0.8;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <h1 class="page-title">算力券活动状态机图</h1>
+            <p class="page-description">展示算力券活动从创建到结束的完整状态流转过程</p>
+        </div>
+
+        <div class="card">
+            <div class="image-container" onclick="openModal()">
+                <img 
+                    src="../算力券原型部分截图/0算力券活动状态机图.png" 
+                    alt="算力券活动状态机图" 
+                    class="state-image"
+                    id="stateImage"
+                >
+                <div class="image-hint">点击图片可放大查看，支持拖拽和缩放</div>
+            </div>
+        </div>
+
+        <!-- 放大模态框 -->
+        <div id="imageModal" class="modal" onclick="closeModal(event)">
+            <div class="modal-content">
+                <!-- 控制按钮 -->
+                <div class="modal-controls">
+                    <button class="control-btn" onclick="zoomOut()" title="缩小">−</button>
+                    <div class="zoom-indicator" id="zoomIndicator">100%</div>
+                    <button class="control-btn" onclick="zoomIn()" title="放大">+</button>
+                    <button class="control-btn" onclick="resetZoom()" title="重置">↻</button>
+                    <button class="control-btn" onclick="closeModal(event)" title="关闭">×</button>
+                </div>
+                
+                <!-- 图片容器 -->
+                <div class="modal-image-wrapper" id="imageWrapper">
+                    <img 
+                        src="../算力券原型部分截图/0算力券活动状态机图.png" 
+                        alt="算力券活动状态机图（放大）" 
+                        class="modal-image"
+                        id="modalImage"
+                        onclick="event.stopPropagation()"
+                    >
+                </div>
+                
+                <div class="modal-hint">鼠标滚轮缩放 | 拖拽移动 | ESC关闭</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let startTranslateX = 0;
+        let startTranslateY = 0;
+
+        const modal = document.getElementById('imageModal');
+        const imageWrapper = document.getElementById('imageWrapper');
+        const modalImage = document.getElementById('modalImage');
+        const zoomIndicator = document.getElementById('zoomIndicator');
+
+        function openModal() {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            // 重置缩放和位置
+            resetZoom();
+        }
+
+        function closeModal(event) {
+            if (event.target.classList.contains('modal') || 
+                (event.target.classList.contains('control-btn') && event.target.textContent === '×')) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+                resetZoom();
+            }
+        }
+
+        function updateTransform() {
+            imageWrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            zoomIndicator.textContent = Math.round(scale * 100) + '%';
+        }
+
+        function zoomIn() {
+            scale = Math.min(scale * 1.2, 5); // 最大5倍
+            updateTransform();
+        }
+
+        function zoomOut() {
+            scale = Math.max(scale / 1.2, 0.5); // 最小0.5倍
+            updateTransform();
+        }
+
+        function resetZoom() {
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+            updateTransform();
+        }
+
+        // 鼠标滚轮缩放
+        modal.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = Math.max(0.5, Math.min(scale * delta, 5));
+            
+            // 以鼠标位置为中心缩放
+            const rect = imageWrapper.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            
+            scale = newScale;
+            translateX = translateX - x * (delta - 1);
+            translateY = translateY - y * (delta - 1);
+            
+            updateTransform();
+        }, { passive: false });
+
+        // 拖拽功能
+        imageWrapper.addEventListener('mousedown', function(e) {
+            if (e.button !== 0) return; // 只处理左键
+            isDragging = true;
+            imageWrapper.classList.add('dragging');
+            startX = e.clientX;
+            startY = e.clientY;
+            startTranslateX = translateX;
+            startTranslateY = translateY;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            translateX = startTranslateX + (e.clientX - startX);
+            translateY = startTranslateY + (e.clientY - startY);
+            updateTransform();
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (isDragging) {
+                isDragging = false;
+                imageWrapper.classList.remove('dragging');
+            }
+        });
+
+        // 按ESC键关闭模态框
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                if (modal.classList.contains('active')) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                    resetZoom();
+                }
+            }
+        });
+
+        // 防止图片被拖拽
+        modalImage.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理核销</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            padding: 24px;
+            background-color: var(--bg-color);
+        }
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .filter-item label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        .filter-item select,
+        .filter-item input {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+        }
+        .table-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .action-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .action-link:hover {
+            text-decoration: underline;
+        }
+        .action-link.danger {
+            color: var(--error-color);
+        }
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-box {
+            background: var(--bg-white);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+        .stat-box-title {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .stat-box-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .stat-box-value.success {
+            color: var(--success-color);
+        }
+        .stat-box-value.warning {
+            color: var(--warning-color);
+        }
+        .stat-box-value.error {
+            color: var(--error-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <h1 class="page-title">管理核销</h1>
+            <p class="page-description">查看和管理算力券核销记录</p>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-box-title">总核销数</div>
+                <div class="stat-box-value">623</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-title">待审核</div>
+                <div class="stat-box-value warning">28</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-title">已通过</div>
+                <div class="stat-box-value success">580</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-title">已拒绝</div>
+                <div class="stat-box-value error">15</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="搜索核销单号、用户ID、订单号...">
+                <button class="btn btn-primary">搜索</button>
+            </div>
+
+            <div class="filter-bar">
+                <div class="filter-item">
+                    <label>核销状态：</label>
+                    <select>
+                        <option>全部</option>
+                        <option>待审核</option>
+                        <option>已通过</option>
+                        <option>已拒绝</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>活动名称：</label>
+                    <select>
+                        <option>全部</option>
+                        <option>2024年度算力券促销活动</option>
+                        <option>新用户专享算力券</option>
+                        <option>春季算力券活动</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>核销时间：</label>
+                    <input type="date">
+                    <span style="margin: 0 8px;">至</span>
+                    <input type="date">
+                </div>
+            </div>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>核销单号</th>
+                        <th>用户ID</th>
+                        <th>活动名称</th>
+                        <th>订单号</th>
+                        <th>券面金额</th>
+                        <th>订单金额</th>
+                        <th>实付金额</th>
+                        <th>核销时间</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>VER20240315001</td>
+                        <td>U123456</td>
+                        <td>2024年度算力券促销活动</td>
+                        <td>ORD20240315001</td>
+                        <td>¥100</td>
+                        <td>¥1,280</td>
+                        <td>¥1,180</td>
+                        <td>2024-03-15 14:35:20</td>
+                        <td><span class="badge badge-success">已通过</span></td>
+                        <td class="table-actions">
+                            <a href="#" class="action-link">详情</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>VER20240315002</td>
+                        <td>U234567</td>
+                        <td>2024年度算力券促销活动</td>
+                        <td>ORD20240315005</td>
+                        <td>¥100</td>
+                        <td>¥680</td>
+                        <td>¥580</td>
+                        <td>2024-03-15 13:20:15</td>
+                        <td><span class="badge badge-success">已通过</span></td>
+                        <td class="table-actions">
+                            <a href="#" class="action-link">详情</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>VER20240315003</td>
+                        <td>U345678</td>
+                        <td>2024年度算力券促销活动</td>
+                        <td>ORD20240315008</td>
+                        <td>¥100</td>
+                        <td>¥520</td>
+                        <td>¥420</td>
+                        <td>2024-03-15 11:45:30</td>
+                        <td><span class="badge badge-warning">待审核</span></td>
+                        <td class="table-actions">
+                            <a href="#" class="action-link">审核</a>
+                            <a href="#" class="action-link">详情</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>VER20240314015</td>
+                        <td>U456789</td>
+                        <td>2024年度算力券促销活动</td>
+                        <td>ORD20240314020</td>
+                        <td>¥100</td>
+                        <td>¥450</td>
+                        <td>-</td>
+                        <td>2024-03-14 16:30:45</td>
+                        <td><span class="badge badge-error">已拒绝</span></td>
+                        <td class="table-actions">
+                            <a href="#" class="action-link">详情</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>VER20240314010</td>
+                        <td>U567890</td>
+                        <td>2024年度算力券促销活动</td>
+                        <td>ORD20240314015</td>
+                        <td>¥100</td>
+                        <td>¥1,500</td>
+                        <td>¥1,400</td>
+                        <td>2024-03-14 10:15:20</td>
+                        <td><span class="badge badge-success">已通过</span></td>
+                        <td class="table-actions">
+                            <a href="#" class="action-link">详情</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>VER20240315004</td>
+                        <td>U678901</td>
+                        <td>2024年度算力券促销活动</td>
+                        <td>ORD20240315012</td>
+                        <td>¥100</td>
+                        <td>¥600</td>
+                        <td>¥500</td>
+                        <td>2024-03-15 09:20:10</td>
+                        <td><span class="badge badge-warning">待审核</span></td>
+                        <td class="table-actions">
+                            <a href="#" class="action-link">审核</a>
+                            <a href="#" class="action-link">详情</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <div class="pagination-item">上一页</div>
+                <div class="pagination-item active">1</div>
+                <div class="pagination-item">2</div>
+                <div class="pagination-item">3</div>
+                <div class="pagination-item">4</div>
+                <div class="pagination-item">下一页</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

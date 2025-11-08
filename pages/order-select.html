@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>算力券申领</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            padding: 24px;
+            background-color: var(--bg-color);
+        }
+        .page-header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        .tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: -2px;
+        }
+        .tab:hover {
+            color: var(--text-primary);
+        }
+        .tab.active {
+            color: var(--error-color);
+            border-bottom-color: var(--error-color);
+            font-weight: 500;
+        }
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .action-left {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .btn-apply {
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-apply:hover {
+            background-color: #ff7875;
+        }
+        .action-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0 12px;
+            background: var(--bg-white);
+        }
+        .search-wrapper input {
+            border: none;
+            padding: 8px 12px;
+            font-size: 14px;
+            outline: none;
+            width: 200px;
+        }
+        .search-icon {
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .btn-filter {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-filter:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        .btn-secondary-action {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        .btn-secondary-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        .table-container {
+            background: var(--bg-white);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table th {
+            background-color: #fafafa;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .table td {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .table tbody tr:hover {
+            background-color: #fafafa;
+        }
+        .order-number {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .order-number-icon {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--error-color);
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .status-dot.completed {
+            background-color: var(--primary-color);
+        }
+        .status-dot.failed {
+            background-color: var(--text-disabled);
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: var(--bg-white);
+            border-top: 1px solid var(--border-color);
+        }
+        .pagination-info {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pagination-btn {
+            min-width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-white);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 8px;
+        }
+        .pagination-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        .pagination-btn.active {
+            background-color: var(--error-color);
+            color: white;
+            border-color: var(--error-color);
+        }
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .pagination-select {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            margin: 0 8px;
+        }
+        .pagination-jump {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 8px;
+        }
+        .pagination-jump input {
+            width: 50px;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header-section">
+            <h1 class="page-title">算力券申领</h1>
+        </div>
+
+        <!-- 标签页 -->
+        <div class="tabs">
+            <button class="tab active">预付费</button>
+            <button class="tab">后付费</button>
+        </div>
+
+        <!-- 操作栏 -->
+        <div class="action-bar">
+            <div class="action-left">
+                <button class="btn-apply">申请算力券</button>
+            </div>
+            <div class="action-right">
+                <div class="search-wrapper">
+                    <input type="text" placeholder="请输入订单编号">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <button class="btn-filter">
+                    高级筛选
+                    <span>▼</span>
+                </button>
+                <button class="btn-secondary-action">重置</button>
+                <button class="btn-secondary-action">返回</button>
+            </div>
+        </div>
+
+        <!-- 订单列表表格 -->
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">
+                            <input type="checkbox">
+                        </th>
+                        <th>订单编号</th>
+                        <th>订单类型</th>
+                        <th>下单时间</th>
+                        <th>订单总额</th>
+                        <th>是否关联预售单</th>
+                        <th>是否退订/退订单号</th>
+                        <th>订单状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>
+                            <div class="order-number">
+                                <span class="order-number-icon"></span>
+                                <span>CPPF2025022610-100SLZ8</span>
+                            </div>
+                        </td>
+                        <td>新购</td>
+                        <td>2025-02-26 10:30:43</td>
+                        <td>18572.00</td>
+                        <td>否</td>
+                        <td>否</td>
+                        <td>
+                            <span class="status-badge">
+                                <span class="status-dot completed"></span>
+                                已完成
+                            </span>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>
+                            <div class="order-number">
+                                <span class="order-number-icon"></span>
+                                <span>CPPF2025022610-100Q012</span>
+                            </div>
+                        </td>
+                        <td>新购</td>
+                        <td>2025-02-26 10:20:15</td>
+                        <td>18572.00</td>
+                        <td>否</td>
+                        <td>否</td>
+                        <td>
+                            <span class="status-badge">
+                                <span class="status-dot completed"></span>
+                                已完成
+                            </span>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>CPPF2025022609-100571I</td>
+                        <td>新购</td>
+                        <td>2025-02-26 09:54:23</td>
+                        <td>18572.00</td>
+                        <td>否</td>
+                        <td>否</td>
+                        <td>
+                            <span class="status-badge">
+                                <span class="status-dot failed"></span>
+                                资源开通失败
+                            </span>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>CPPF2025022601-100571I</td>
+                        <td>新购</td>
+                        <td>2025-02-26 01:01:23</td>
+                        <td>15072.00</td>
+                        <td>否</td>
+                        <td>否</td>
+                        <td>
+                            <span class="status-badge">
+                                <span class="status-dot failed"></span>
+                                资源开通失败
+                            </span>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>CPPF2025022600-100571I</td>
+                        <td>新购</td>
+                        <td>2025-02-26 00:55:47</td>
+                        <td>15072.00</td>
+                        <td>否</td>
+                        <td>否</td>
+                        <td>
+                            <span class="status-badge">
+                                <span class="status-dot failed"></span>
+                                资源分配失败
+                            </span>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>CPPF2025022600-100571I</td>
+                        <td>新购</td>
+                        <td>2025-02-26 00:54:56</td>
+                        <td>15072.00</td>
+                        <td>否</td>
+                        <td>否</td>
+                        <td>
+                            <span class="status-badge">
+                                <span class="status-dot failed"></span>
+                                资源分配失败
+                            </span>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>CPPF2025022600-100571I</td>
+                        <td>新购</td>
+                        <td>2025-02-26 00:47:28</td>
+                        <td>15072.00</td>
+                        <td>否</td>
+                        <td>否</td>
+                        <td>
+                            <span class="status-badge">
+                                <span class="status-dot failed"></span>
+                                资源分配失败
+                            </span>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>CPPF2025022600-100571I</td>
+                        <td>新购</td>
+                        <td>2025-02-26 00:46:46</td>
+                        <td>15072.00</td>
+                        <td>否</td>
+                        <td>否</td>
+                        <td>
+                            <span class="status-badge">
+                                <span class="status-dot failed"></span>
+                                资源分配失败
+                            </span>
+                        </td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 分页 -->
+            <div class="pagination-container">
+                <div class="pagination-info">共204条</div>
+                <div class="pagination-controls">
+                    <button class="pagination-btn">‹</button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn">4</button>
+                    <button class="pagination-btn">5</button>
+                    <span style="padding: 0 4px;">...</span>
+                    <button class="pagination-btn">21</button>
+                    <button class="pagination-btn">›</button>
+                    <select class="pagination-select">
+                        <option>10条/页</option>
+                        <option>20条/页</option>
+                        <option>50条/页</option>
+                        <option>100条/页</option>
+                    </select>
+                    <div class="pagination-jump">
+                        <span>跳至</span>
+                        <input type="number" value="1" min="1" max="21">
+                        <span>页</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 全选复选框
+        const headerCheckbox = document.querySelector('thead input[type="checkbox"]');
+        const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+        
+        headerCheckbox.addEventListener('change', function() {
+            rowCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
+    </script>
+</body>
+</html>

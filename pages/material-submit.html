@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>算力券申领</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            padding: 0;
+            background-color: var(--bg-color);
+            margin: 0;
+        }
+        .page-container {
+            max-width: 100%;
+            margin: 0;
+        }
+        
+        /* 顶部操作栏 */
+        .top-action-bar {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+        .btn-top-action {
+            padding: 8px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-white);
+            color: var(--text-primary);
+        }
+        .btn-top-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        .btn-top-action.submit {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+        .btn-top-action.submit:hover {
+            background-color: #73d13d;
+        }
+        
+        /* 内容区域 */
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        
+        /* 页面标题 */
+        .page-title-section {
+            margin-bottom: 32px;
+        }
+        .page-title-main {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .page-title-sub {
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: normal;
+        }
+        
+        /* 表单部分 */
+        .form-section {
+            background: var(--bg-white);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .form-label.required::after {
+            content: ' *';
+            color: var(--error-color);
+        }
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: inherit;
+            background: var(--bg-white);
+        }
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+        }
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        
+        /* 额度信息（只读） */
+        .quota-section {
+            background: #fafafa;
+            border-radius: var(--radius-sm);
+            padding: 20px;
+        }
+        .quota-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .quota-item:last-child {
+            border-bottom: none;
+        }
+        .quota-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .quota-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        /* 文件上传 */
+        .upload-area {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 60px 20px;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background: #f0f7ff;
+        }
+        .upload-icon {
+            font-size: 48px;
+            color: var(--text-disabled);
+            margin-bottom: 12px;
+        }
+        .upload-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部操作栏 -->
+    <div class="top-action-bar">
+        <button class="btn-top-action">返回</button>
+        <button class="btn-top-action">保存草稿</button>
+        <button class="btn-top-action submit">提交审核</button>
+    </div>
+
+    <div class="content-wrapper">
+        <!-- 页面标题 -->
+        <div class="page-title-section">
+            <h1 class="page-title-main">算力券申领</h1>
+            <p class="page-title-sub">${算力券活动名称}</p>
+        </div>
+
+        <form>
+            <!-- 企业信息 -->
+            <div class="form-section">
+                <h2 class="section-title">企业信息</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">企业全称</label>
+                        <input type="text" class="form-input" placeholder="企业名称">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">统一社会信用代码</label>
+                        <input type="text" class="form-input" placeholder="统一社会信用代码">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">企业规模</label>
+                        <select class="form-select">
+                            <option>大型企业</option>
+                            <option>中型企业</option>
+                            <option>小型企业</option>
+                            <option>微型企业</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">资源来源方</label>
+                        <input type="text" class="form-input" placeholder="资源来源方">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">所属行业</label>
+                        <input type="text" class="form-input" placeholder="所属行业">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 经办人信息 -->
+            <div class="form-section">
+                <h2 class="section-title">经办人信息</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">经办人姓名</label>
+                        <input type="text" class="form-input" placeholder="联系人姓名">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">联系人电话</label>
+                        <input type="tel" class="form-input" placeholder="联系人电话">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">身份证号</label>
+                        <input type="text" class="form-input" placeholder="身份证号">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">性别</label>
+                        <select class="form-select">
+                            <option value="">请选择</option>
+                            <option>男</option>
+                            <option>女</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">邮箱</label>
+                        <input type="email" class="form-input" placeholder="邮箱">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 额度 -->
+            <div class="form-section">
+                <h2 class="section-title">额度</h2>
+                <div class="quota-section">
+                    <div class="quota-item">
+                        <span class="quota-label">订单号:</span>
+                        <span class="quota-value">CPPA2025022523-20046C5, CPPF2025022609-1005711</span>
+                    </div>
+                    <div class="quota-item">
+                        <span class="quota-label">订单总额:</span>
+                        <span class="quota-value">10,000 元</span>
+                    </div>
+                    <div class="quota-item">
+                        <span class="quota-label">订单实付金额:</span>
+                        <span class="quota-value">10,000 元</span>
+                    </div>
+                    <div class="quota-item">
+                        <span class="quota-label">可补贴的订单总额:</span>
+                        <span class="quota-value">10,000 元</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 材料上传 -->
+            <div class="form-section">
+                <h2 class="section-title">材料上传</h2>
+                <div class="upload-area">
+                    <div class="upload-icon">+</div>
+                    <div class="upload-text">点击上传</div>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+
+

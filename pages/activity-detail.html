@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>活动详情</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            padding: 0;
+            background-color: var(--bg-color);
+            margin: 0;
+        }
+        .page-container {
+            max-width: 100%;
+            margin: 0;
+        }
+        
+        /* 顶部图片区域 */
+        .activity-header-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: block;
+        }
+        .activity-header-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* 内容区域 */
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+        
+        /* 页面标题区域 */
+        .page-header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        .page-title-group h1 {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .page-title-group p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .status-badge-large {
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* 统计卡片 */
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 32px;
+            border-radius: var(--radius-md);
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-md);
+        }
+        .stat-card h3 {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+        .stat-numbers {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+        .stat-number {
+            text-align: center;
+        }
+        .stat-number-value {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .stat-number-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        /* 详情网格 */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .detail-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .detail-value {
+            font-size: 16px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .detail-value.tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e6f7ff;
+            color: var(--primary-color);
+            border-radius: 12px;
+            font-size: 14px;
+            width: fit-content;
+        }
+        
+        /* 富文本内容 */
+        .rich-content {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 14px;
+        }
+        .rich-content h3 {
+            color: var(--text-primary);
+            font-size: 16px;
+            margin: 20px 0 12px;
+        }
+        .rich-content h3:first-child {
+            margin-top: 0;
+        }
+        .rich-content p {
+            margin-bottom: 12px;
+        }
+        .rich-content ul, .rich-content ol {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+        .rich-content li {
+            margin-bottom: 8px;
+        }
+        
+        /* 附件展示 */
+        .attachment-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .attachment-item {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+            background: #fafafa;
+            transition: all 0.2s;
+        }
+        .attachment-item:hover {
+            border-color: var(--primary-color);
+            background: #f0f7ff;
+        }
+        .attachment-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .attachment-name {
+            font-size: 13px;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+        .attachment-download {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+        .attachment-download:hover {
+            text-decoration: underline;
+        }
+        
+        /* 顶部操作栏 */
+        .top-action-bar {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+        .btn-top-action {
+            padding: 8px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-white);
+            color: var(--text-primary);
+        }
+        .btn-top-action:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        .btn-top-action.primary {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .btn-top-action.primary:hover {
+            background-color: var(--primary-hover);
+        }
+        .btn-top-action.warning {
+            background-color: var(--warning-color);
+            color: white;
+            border-color: var(--warning-color);
+        }
+        .btn-top-action.warning:hover {
+            background-color: #ffc53d;
+        }
+        .btn-top-action.success {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+        .btn-top-action.success:hover {
+            background-color: #73d13d;
+        }
+        
+        /* 卡片间距 */
+        .card {
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部操作栏 -->
+    <div class="top-action-bar">
+        <button class="btn-top-action">返回列表</button>
+        <button class="btn-top-action primary">发起申领</button>
+        <button class="btn-top-action success">查看核销记录</button>
+    </div>
+
+    <!-- 活动图片头部 -->
+    <!-- <div class="activity-header-image">
+        <img src="../assets/activity-detail-banner.png" alt="活动图片" onerror="this.parentElement.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.style.display='none';">
+    </div> -->
+
+    <div class="content-wrapper">
+        <!-- 页面标题 -->
+        <div class="page-header-section">
+            <div class="page-title-group">
+                <h1>2025年度上半年算力券申领活动</h1>
+                <p>活动ID: ACT202501001 | 创建时间: 2025-01-01 10:00:00</p>
+            </div>
+            <span class="badge badge-success status-badge-large">进行中</span>
+        </div>
+
+        <!-- 数据统计 -->
+        <div class="stat-card">
+            <h3>活动数据统计</h3>
+            <div class="stat-numbers">
+                <div class="stat-number">
+                    <div class="stat-number-value">1,256</div>
+                    <div class="stat-number-label">已发放</div>
+                </div>
+                <div class="stat-number">
+                    <div class="stat-number-value">892</div>
+                    <div class="stat-number-label">已使用</div>
+                </div>
+                <div class="stat-number">
+                    <div class="stat-number-value">364</div>
+                    <div class="stat-number-label">未使用</div>
+                </div>
+                <div class="stat-number">
+                    <div class="stat-number-value">71.0%</div>
+                    <div class="stat-number-label">使用率</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 基本信息 -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">基本信息</h2>
+            </div>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">活动名称</span>
+                    <span class="detail-value">2025年度上半年算力券申领活动</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">活动时间</span>
+                    <span class="detail-value">2025/01/01 至 2025/07/01</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">活动摘要</span>
+                    <span class="detail-value">2025年度算力券申领,由此处进入申报页面,申报时间为2025年上半年,结果将于2025年下半年10月份左右进行公示。</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">补贴对象</span>
+                    <span class="detail-value tag">使用方</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 补贴和申请规则 -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">补贴和申请规则</h2>
+            </div>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">补贴对象</span>
+                    <span class="detail-value tag">使用方</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">申领方式</span>
+                    <span class="detail-value tag">一键申报</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">返还方式</span>
+                    <span class="detail-value tag">现金</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 补贴金额 -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">补贴金额</h2>
+            </div>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">总补贴额度</span>
+                    <span class="detail-value">5,000,000 元</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">补贴比例</span>
+                    <span class="detail-value">30%</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">同一主体补贴最高额度</span>
+                    <span class="detail-value">100,000 元</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">单次补贴最高额度</span>
+                    <span class="detail-value">50,000 元</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 算力券活动介绍 -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">算力券活动介绍</h2>
+            </div>
+            <div class="rich-content">
+                <h3>活动背景</h3>
+                <p>为促进算力产业发展，支持企业数字化转型，特推出2025年度算力券申领活动。本次活动面向使用方企业，提供现金补贴支持。</p>
+                
+                <h3>活动目标</h3>
+                <p>通过算力券的发放和使用，帮助企业降低算力成本，推动AI模型训练、数据分析、科学计算等应用场景的发展。</p>
+                
+                <h3>支持范围</h3>
+                <ul>
+                    <li>AI模型训练和推理</li>
+                    <li>大数据分析和处理</li>
+                    <li>科学计算和仿真</li>
+                    <li>其他符合要求的算力应用场景</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 算力券申领流程 -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">算力券申领流程</h2>
+            </div>
+            <div class="rich-content">
+                <h3>第一步：准备材料</h3>
+                <p>准备营业执照、项目说明文档等相关材料。</p>
+                
+                <h3>第二步：在线申报</h3>
+                <p>登录系统，填写申请信息，上传相关材料，提交申请。</p>
+                
+                <h3>第三步：审核</h3>
+                <p>系统将对申请材料进行审核，审核通过后将发放算力券。</p>
+                
+                <h3>第四步：使用算力券</h3>
+                <p>在活动期间内，使用算力券购买算力资源，享受补贴优惠。</p>
+                
+                <h3>第五步：结果公示</h3>
+                <p>活动结束后，将在2025年10月份左右公示申领和使用结果。</p>
+            </div>
+        </div>
+
+        <!-- 附件说明 -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">附件说明</h2>
+            </div>
+            <div class="rich-content">
+                <p>申请时需要提交以下材料：</p>
+                <ol>
+                    <li><strong>营业执照</strong>：需在有效期内，清晰可读</li>
+                    <li><strong>项目说明文档</strong>：详细描述项目背景、需求和使用场景</li>
+                    <li><strong>其他相关材料</strong>：根据实际情况提供</li>
+                </ol>
+                <p>所有材料需真实有效，如有虚假信息，将取消申请资格。</p>
+            </div>
+        </div>
+
+        <!-- 附件样本 -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">附件样本</h2>
+            </div>
+            <div class="attachment-list">
+                <div class="attachment-item">
+                    <div class="attachment-icon">📄</div>
+                    <div class="attachment-name">项目说明文档模板.docx</div>
+                    <div class="attachment-download">下载</div>
+                </div>
+                <div class="attachment-item">
+                    <div class="attachment-icon">📋</div>
+                    <div class="attachment-name">申请材料清单.pdf</div>
+                    <div class="attachment-download">下载</div>
+                </div>
+                <div class="attachment-item">
+                    <div class="attachment-icon">📝</div>
+                    <div class="attachment-name">填写说明文档.pdf</div>
+                    <div class="attachment-download">下载</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

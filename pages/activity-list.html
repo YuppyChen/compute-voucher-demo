@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>活动列表</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            padding: 0;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+        .page-container {
+            max-width: 100%;
+            margin: 0;
+        }
+        
+        /* Banner 样式 */
+        .banner {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(24, 144, 255, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(64, 169, 255, 0.2) 0%, transparent 50%),
+                linear-gradient(45deg, transparent 30%, rgba(24, 144, 255, 0.1) 50%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        .banner::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(24, 144, 255, 0.05) 2px, rgba(24, 144, 255, 0.05) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(24, 144, 255, 0.05) 2px, rgba(24, 144, 255, 0.05) 4px);
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        .banner-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            color: white;
+        }
+        .banner-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-shadow: 0 0 20px rgba(24, 144, 255, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .banner-subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 0;
+        }
+        .banner-button {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-sm);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .banner-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* 内容区域 */
+        .content-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px 40px;
+        }
+        
+        /* 活动卡片 */
+        .activity-card {
+            background: var(--bg-white);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            padding: 24px;
+            display: flex;
+            gap: 24px;
+            transition: all 0.3s;
+        }
+        .activity-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .activity-image {
+            width: 200px;
+            height: 150px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .activity-image::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 30% 30%, rgba(24, 144, 255, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(64, 169, 255, 0.2) 0%, transparent 50%);
+        }
+        .activity-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: relative;
+            z-index: 1;
+        }
+        .activity-image-placeholder {
+            position: relative;
+            z-index: 1;
+            font-size: 48px;
+            color: rgba(24, 144, 255, 0.6);
+        }
+        .activity-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .activity-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+        .activity-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+            flex: 1;
+        }
+        .activity-date {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+        .activity-button {
+            align-self: flex-start;
+            padding: 10px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .activity-button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+    </style>
+</head>
+<body>
+    <!-- Banner 区域 -->
+    <div class="banner">
+        <button class="banner-button">查看往期活动</button>
+        <div class="banner-content">
+            <h1 class="banner-title">算力券申请</h1>
+            <p class="banner-subtitle">限时申领·赋能企业</p>
+        </div>
+    </div>
+
+    <!-- 内容区域 -->
+    <div class="content-section">
+        <!-- 活动卡片 1 -->
+        <div class="activity-card">
+            <div class="activity-image">
+                <img src="../assets/activity-placeholder.png" alt="活动图片" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="activity-image-placeholder" style="display: none;">🏔️</div>
+            </div>
+            <div class="activity-content">
+                <div>
+                    <h2 class="activity-title">2025年度上半年算力券申领活动</h2>
+                    <p class="activity-description">
+                        2025年度算力券申领,由此处进入申报页面,申报时间为2025年上半年,结果将于2025年下半年10月份左右进行公示。
+                    </p>
+                    <div class="activity-date">2025/01/01 至 2025/07/01</div>
+                </div>
+                <button class="activity-button">查看活动详细信息</button>
+            </div>
+        </div>
+
+        <!-- 活动卡片 2 -->
+        <div class="activity-card">
+            <div class="activity-image">
+                <img src="../assets/activity-placeholder.png" alt="活动图片" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="activity-image-placeholder" style="display: none;">🏔️</div>
+            </div>
+            <div class="activity-content">
+                <div>
+                    <h2 class="activity-title">2025年度下半年算力券申领活动</h2>
+                    <p class="activity-description">
+                        2025年度算力券申领,由此处进入申报页面,申报时间为2025年上半年,结果将于2025年下半年10月份左右进行公示。
+                    </p>
+                    <div class="activity-date">2025/01/01 至 2025/07/01</div>
+                </div>
+                <button class="activity-button">发起申领</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

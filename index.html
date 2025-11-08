@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>算力券演示系统</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        .content-area {
+            padding: 0;
+        }
+        #content-frame {
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- 侧边栏导航 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>算力券演示</h1>
+            </div>
+            <nav>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-nav-item">
+                        <a href="pages/state-machine.html" class="sidebar-nav-link active" target="content-frame">
+                            <span class="step-number">0</span>
+                            算力券活动状态机图
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="pages/activity-create.html" class="sidebar-nav-link" target="content-frame">
+                            <span class="step-number">1</span>
+                            活动创建
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="pages/activity-list.html" class="sidebar-nav-link" target="content-frame">
+                            <span class="step-number">2</span>
+                            活动列表
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="pages/activity-detail.html" class="sidebar-nav-link" target="content-frame">
+                            <span class="step-number">3</span>
+                            活动详情
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="pages/order-select.html" class="sidebar-nav-link" target="content-frame">
+                            <span class="step-number">4</span>
+                            算力券申领
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="pages/material-submit.html" class="sidebar-nav-link" target="content-frame">
+                            <span class="step-number">5</span>
+                            算力券申领表单
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="pages/verification-manage.html" class="sidebar-nav-link" target="content-frame">
+                            <span class="step-number">6</span>
+                            管理核销
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="pages/audit.html" class="sidebar-nav-link" target="content-frame">
+                            <span class="step-number">7</span>
+                            审核页面
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 内容区域 -->
+        <main class="content-area">
+            <iframe 
+                id="content-frame" 
+                name="content-frame" 
+                src="pages/state-machine.html" 
+                frameborder="0"
+            ></iframe>
+        </main>
+    </div>
+
+    <script>
+        // 导航链接点击时添加active类
+        document.querySelectorAll('.sidebar-nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                document.querySelectorAll('.sidebar-nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
+
