@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>闽宁专区 - 算力产品展示</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 使用 Inter 字体 -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <style>
+        /* 自定义 Tailwind 基础配置 */
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand-blue': '#2563eb',
+                    }
+                },
+            },
+        }
+
+        /* 运营商 Tab 激活样式 */
+        .operator-tab.active {
+            background-color: #2563eb; /* brand-blue */
+            color: #ffffff;
+        }
+
+        /* 分类 Tab 激活样式 */
+        .category-tab.active {
+            border-color: #2563eb; /* brand-blue */
+            color: #eff6ff; /* blue-50 */
+        }
+        
+        /* 产品网格横向滚动样式 */
+        #product-grid {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            gap: 1.5rem;
+            padding-bottom: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+
+        #product-grid::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        #product-grid::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        #product-grid::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        #product-grid::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* 产品卡片样式 */
+        .product-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb; /* border-gray-200 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+            transition: all 0.3s ease; /* 过渡动画 */
+            overflow: hidden; /* 配合圆角 */
+            /* 横向滚动布局：固定宽度，确保一行最多显示 6 个 */
+            flex: 0 0 300px; /* 固定宽度，确保一行最多显示 6 个 */
+            width: 300px;
+        }
+
+        @media (max-width: 768px) {
+            .product-card {
+                flex: 0 0 calc(50% - 0.75rem); /* 移动端显示2个 */
+                min-width: 240px;
+                width: auto;
+            }
+        }
+
+        /* 卡片隐藏样式 */
+        .product-card.hidden {
+            display: none;
+        }
+
+        /* 辅助类 */
+        .hidden {
+            display: none;
+        }
+
+        /* 算力分布图样式 */
+        .power-distribution-map {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .power-distribution-map::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(147, 51, 234, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .power-node {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .power-node:hover:not(.highlighted) {
+            z-index: 5;
+        }
+
+        .power-node.highlighted {
+            z-index: 10;
+        }
+
+        .power-node-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .power-node:hover .power-node-circle:not(.highlighted) {
+            transform: scale(1.1);
+        }
+
+        .power-node-label {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #ffffff;
+            margin-top: 0.5rem;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .power-connection-line {
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.6;
+            filter: drop-shadow(0 0 2px currentColor);
+            transition: all 0.3s ease;
+        }
+
+        /* 高亮样式 */
+        .power-node.highlighted .power-node-circle {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        .power-node.highlighted .power-node-label {
+            font-weight: 700;
+            font-size: 1rem;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+        }
+
+        .power-connection-line.highlighted {
+            stroke-width: 4;
+            opacity: 1;
+            filter: drop-shadow(0 0 4px currentColor);
+            animation: linePulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 60px rgba(255, 255, 255, 0.6);
+            }
+        }
+
+        @keyframes linePulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* 非高亮状态下的淡化效果 */
+        .power-distribution-map.dimmed .power-node:not(.highlighted) {
+            opacity: 0.3;
+        }
+
+        .power-distribution-map.dimmed .power-connection-line:not(.highlighted) {
+            opacity: 0.2;
+        }
+
+        /* 更多节点特殊样式（表示未来/计划中） */
+        .power-node[data-node-id="more"] {
+            opacity: 0.7;
+        }
+
+        .power-node[data-node-id="more"] .power-node-circle {
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+        }
+
+        .power-node[data-node-id="more"]:hover {
+            opacity: 1;
+        }
+
+        .power-node[data-node-id="more"].highlighted {
+            opacity: 1;
+        }
+
+        .power-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            max-width: 180px;
+            z-index: 2;
+        }
+
+        .power-legend-item {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            white-space: nowrap;
+        }
+
+        .power-legend-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .power-legend-item.active {
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateX(4px);
+        }
+
+        @media (max-width: 768px) {
+            .power-distribution-map {
+                height: 500px;
+                padding: 1rem;
+            }
+
+            .power-legend {
+                position: relative;
+                left: auto;
+                top: auto;
+                transform: none;
+                margin-bottom: 1rem;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .power-legend-item {
+                font-size: 0.75rem;
+                padding: 0.375rem 0.75rem;
+            }
+
+            .power-node {
+                transform: scale(0.8);
+            }
+
+            .power-node-label {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl bg-white rounded-lg shadow-xl min-h-screen">
+
+        <!-- 算力分布图 -->
+        <div class="power-distribution-map" id="power-distribution-map" style="height: 450px; position: relative;">
+            <!-- SVG 连接线 -->
+            <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                <!-- 电信到福建 -->
+                <line id="line-telecom-fujian" x1="30%" y1="20%" x2="50%" y2="50%" class="power-connection-line" stroke="#3b82f6" />
+                <!-- 移动到福建 -->
+                <line id="line-mobile-fujian" x1="30%" y1="40%" x2="50%" y2="50%" class="power-connection-line" stroke="#10b981" />
+                <!-- 联接到福建 -->
+                <line id="line-unicom-fujian" x1="30%" y1="60%" x2="50%" y2="50%" class="power-connection-line" stroke="#f59e0b" />
+                <!-- 更多节点到福建 -->
+                <line id="line-more-fujian" x1="30%" y1="80%" x2="50%" y2="50%" class="power-connection-line" stroke="#6b7280" stroke-dasharray="3,3" />
+                <!-- 福建到宁夏 -->
+                <line id="line-fujian-ningxia" x1="50%" y1="50%" x2="75%" y2="50%" class="power-connection-line" stroke="#ec4899" stroke-dasharray="5,5" />
+            </svg>
+
+            <!-- 左侧图例 -->
+            <div class="power-legend">
+                <div class="power-legend-item" data-node-id="fujian" onclick="highlightNode('fujian')" style="background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); color: white;">
+                    福建省算力互联互通平台
+                </div>
+                <div class="power-legend-item" data-node-id="telecom" onclick="highlightNode('telecom')" style="background: white; color: #1e3a8a;">
+                    中国电信
+                </div>
+                <div class="power-legend-item" data-node-id="mobile" onclick="highlightNode('mobile')" style="background: white; color: #1e3a8a;">
+                    中国移动
+                </div>
+                <div class="power-legend-item" data-node-id="unicom" onclick="highlightNode('unicom')" style="background: white; color: #1e3a8a;">
+                    中国联通
+                </div>
+                <div class="power-legend-item" data-node-id="more" onclick="highlightNode('more')" style="background: white; color: #1e3a8a; opacity: 0.8;">
+                    更多平台...
+                </div>
+                <div class="power-legend-item" data-node-id="ningxia" onclick="highlightNode('ningxia')" style="background: white; color: #1e3a8a;">
+                    宁夏算力
+                </div>
+            </div>
+
+            <!-- 节点 -->
+            <!-- 中国电信 -->
+            <div class="power-node" id="node-telecom" data-node-id="telecom" onclick="highlightNode('telecom')" style="left: 30%; top: 20%; transform: translate(-50%, -50%); z-index: 3;">
+                <div class="power-node-circle" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div class="power-node-label">中国电信</div>
+            </div>
+
+            <!-- 中国移动 -->
+            <div class="power-node" id="node-mobile" data-node-id="mobile" onclick="highlightNode('mobile')" style="left: 30%; top: 40%; transform: translate(-50%, -50%); z-index: 3;">
+                <div class="power-node-circle" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div class="power-node-label">中国移动</div>
+            </div>
+
+            <!-- 中国联通 -->
+            <div class="power-node" id="node-unicom" data-node-id="unicom" onclick="highlightNode('unicom')" style="left: 30%; top: 60%; transform: translate(-50%, -50%); z-index: 3;">
+                <div class="power-node-circle" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div class="power-node-label">中国联通</div>
+            </div>
+
+            <!-- 更多平台节点 -->
+            <div class="power-node" id="node-more" data-node-id="more" onclick="highlightNode('more')" style="left: 30%; top: 80%; transform: translate(-50%, -50%); z-index: 3;">
+                <div class="power-node-circle" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                </div>
+                <div class="power-node-label">更多平台...</div>
+            </div>
+
+            <!-- 福建省算力互联互通平台 -->
+            <div class="power-node" id="node-fujian" data-node-id="fujian" onclick="highlightNode('fujian')" style="left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3;">
+                <div class="power-node-circle" style="background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); width: 80px; height: 80px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div class="power-node-label" style="top: 100%; margin-top: 0.75rem;">福建省算力互联互通平台</div>
+            </div>
+
+            <!-- 宁夏算力平台 -->
+            <div class="power-node" id="node-ningxia" data-node-id="ningxia" onclick="highlightNode('ningxia')" style="left: 75%; top: 50%; transform: translate(-50%, -50%); z-index: 3;">
+                <div class="power-node-circle" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div class="power-node-label" style="top: 100%; margin-top: 0.5rem;">宁夏算力平台</div>
+            </div>
+        </div>
+
+        <!-- 整体 Flex 布局: 左侧边栏 + 右侧内容 -->
+        <div class="flex flex-col md:flex-row -m-4 md:-m-8">
+
+            <!-- 1. 左侧边栏 -->
+            <aside class="w-full md:w-1/4 p-6 md:p-8 bg-gray-50 rounded-l-lg border-r border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">闽宁专区算力</h2>
+                <p class="text-gray-600 text-sm mb-8">
+                    适用于AI大模型训练和推理，性能强大且经济实惠的TPU和GPU算力资源。
+                </p>
+
+                <div class="space-y-6">
+                    <!-- 特性1 -->
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 p-2 bg-blue-100 rounded-full mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">快速创建</h4>
+                            <p class="text-sm text-gray-600">在极短时间内完成实例创建</p>
+                        </div>
+                    </div>
+                    <!-- 特性2 -->
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 p-2 bg-blue-100 rounded-full mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">≥99.9%</h4>
+                            <p class="text-sm text-gray-600">历史SLA承诺的可用时间</p>
+                        </div>
+                    </div>
+                    <!-- 特性3 -->
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 p-2 bg-blue-100 rounded-full mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H7a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">按需付费</h4>
+                            <p class="text-sm text-gray-600">只为算力消耗的增量付费</p>
+                        </div>
+                    </div>
+                    <!-- 特性4 -->
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 p-2 bg-blue-100 rounded-full mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4M4 7l8 5 8-5M12 12l8 5" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">数据存储</h4>
+                            <p class="text-sm text-gray-600">提供可靠、可扩展的存储空间</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 2. 右侧主内容区 -->
+            <main class="w-full md:w-3/4 p-6 md:p-8">
+                
+                <!-- 运营商 Tab -->
+                <nav class="flex space-x-2 mb-6" aria-label="Operators">
+                    <button class="operator-tab active py-2 px-5 rounded-md font-medium text-sm transition"
+                            onclick="openOperator(event, 'telecom')">
+                        中国电信
+                    </button>
+                    <button class="operator-tab py-2 px-5 rounded-md font-medium text-sm text-gray-600 hover:bg-gray-200 transition"
+                            onclick="openOperator(event, 'mobile')">
+                        中国移动
+                    </button>
+                    <button class="operator-tab py-2 px-5 rounded-md font-medium text-sm text-gray-600 hover:bg-gray-200 transition"
+                            onclick="openOperator(event, 'unicom')">
+                        中国联通
+                    </button>
+                </nav>
+
+                <!-- 产品分类 Tab -->
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="-mb-px flex space-x-6" aria-label="Categories">
+                        <span class="py-3 px-1 text-sm font-medium text-gray-500">产品分类:</span>
+                        <button class="category-tab active py-3 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                onclick="openCategory(event, 'computing')">
+                            计算
+                        </button>
+                        <button class="category-tab py-3 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                onclick="openCategory(event, 'storage')">
+                            存储
+                        </button>
+                        <button class="category-tab py-3 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                onclick="openCategory(event, 'network')">
+                            网络
+                        </button>
+                        <button class="category-tab py-3 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                onclick="openCategory(event, 'platform')">
+                            调度平台
+                        </button>
+                        <button class="category-tab py-3 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                onclick="openCategory(event, 'all')">
+                            全部
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- 产品卡片网格 (您截图中的选中区域) -->
+                <!-- 
+                  这里是所有产品卡片的容器
+                  JS 会根据 data-operator 和 data-category 来切换显示/隐藏
+                  横向滚动布局，最多显示 6 个卡片
+                -->
+                <div id="product-grid">
+
+                    <!-- 
+                      ==== 计算产品 ====
+                    -->
+                    <!-- 电信 -->
+                    <div id="ecs" class="product-card" data-operator="telecom" data-category="computing">
+                        <!-- Header -->
+                        <div class="bg-blue-50 px-5 py-3 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-blue-800">节点 T001</span>
+                                <span class="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">可用 8/8</span>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">云服务器 ECS (电信)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">CPU</span><span class="font-medium text-gray-800">Intel Xeon Gold 8-Core</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">内存</span><span class="font-medium text-gray-800">64GB</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">系统盘</span><span class="font-medium text-gray-800">100GB (SSD)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">通用Web应用</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 0.99 <span class="text-xs text-gray-500 font-normal">/核*小时</span></span>
+                                <span class="block text-xs text-gray-400 line-through">¥ 1.29</span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                立即租用
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="bms" class="product-card" data-operator="telecom" data-category="computing">
+                        <!-- Header -->
+                        <div class="bg-blue-50 px-5 py-3 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-blue-800">节点 T002</span>
+                                <span class="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">可用 4/4</span>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">裸金属服务器 BMS</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">CPU</span><span class="font-medium text-gray-800">Intel Xeon Gold 16-Core</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">内存</span><span class="font-medium text-gray-800">128GB</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">系统盘</span><span class="font-medium text-gray-800">200GB (NVMe)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">物理机高性能</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 3.99 <span class="text-xs text-gray-500 font-normal">/核*小时</span></span>
+                                <span class="block text-xs text-gray-400 line-through">¥ 4.59</span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                立即租用
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="gpu-dx" class="product-card" data-operator="telecom" data-category="computing">
+                        <!-- Header -->
+                        <div class="bg-red-50 px-5 py-3 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-red-800">节点 T-GPU01</span>
+                                <span class="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">可用 2/8</span>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">GPU 云服务器 (电信)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">显存</span><span class="font-medium text-gray-800">32GB (HBM2)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">CPU</span><span class="font-medium text-gray-800">Intel Xeon Gold 8-Core</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">内存</span><span class="font-medium text-gray-800">128GB</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">AI 训练, 深度学习</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 5.99 <span class="text-xs text-gray-500 font-normal">/GPU*小时</span></span>
+                                <span class="block text-xs text-gray-400 line-through">¥ 7.99</span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                2卡可租
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 移动 (您截图中高亮的区域) -->
+                    <div id="cvm" class="product-card" data-operator="mobile" data-category="computing">
+                        <!-- Header -->
+                        <div class="bg-green-50 px-5 py-3 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-green-800">节点 M001</span>
+                                <span class="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">可用 10/10</span>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">云主机 CVM (移动)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">CPU</span><span class="font-medium text-gray-800">ARM 8-Core</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">内存</span><span class="font-medium text-gray-800">32GB</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">系统盘</span><span class="font-medium text-gray-800">80GB (SSD)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">安全可靠, 弹性计算</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 0.89 <span class="text-xs text-gray-500 font-normal">/核*小时</span></span>
+                                <span class="block text-xs text-gray-400 line-through">¥ 1.19</span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                立即租用
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="ec" class="product-card" data-operator="mobile" data-category="computing">
+                        <!-- Header -->
+                        <div class="bg-green-50 px-5 py-3 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-green-800">节点 M002</span>
+                                <span class="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">可用 20/20</span>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">弹性计算 EC (移动)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">CPU</span><span class="font-medium text-gray-800">Intel Xeon Silver 4-Core</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">内存</span><span class="font-medium text-gray-800">16GB</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">系统盘</span><span class="font-medium text-gray-800">50GB (SSD)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">弹性伸缩, 网站托管</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 0.79 <span class="text-xs text-gray-500 font-normal">/核*小时</span></span>
+                                <span class="block text-xs text-gray-400 line-through">¥ 1.09</span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                立即租用
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="gpu-yd" class="product-card" data-operator="mobile" data-category="computing">
+                        <!-- Header -->
+                        <div class="bg-red-50 px-5 py-3 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-red-800">节点 M-GPU01</span>
+                                <span class="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">可用 4/8</span>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">GPU 实例 (移动)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">显存</span><span class="font-medium text-gray-800">24GB (GDDR6)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">CPU</span><span class="font-medium text-gray-800">Intel Xeon Gold 8-Core</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">内存</span><span class="font-medium text-gray-800">128GB</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">AI 推理, 图形渲染</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 4.99 <span class="text-xs text-gray-500 font-normal">/GPU*小时</span></span>
+                                <span class="block text-xs text-gray-400 line-through">¥ 6.99</span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                4卡可租
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 联通 -->
+                    <div id="cus" class="product-card" data-operator="unicom" data-category="computing">
+                        <!-- Header -->
+                        <div class="bg-orange-50 px-5 py-3 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-orange-800">节点 U001</span>
+                                <span class="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">可用 12/12</span>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">云服务器 CUS (联通)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">CPU</span><span class="font-medium text-gray-800">Intel Xeon Silver 8-Core</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">内存</span><span class="font-medium text-gray-800">64GB</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">系统盘</span><span class="font-medium text-gray-800">100GB (SSD)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">企业应用, 网站</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 0.95 <span class="text-xs text-gray-500 font-normal">/核*小时</span></span>
+                                <span class="block text-xs text-gray-400 line-through">¥ 1.25</span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                立即租用
+                            </button>
+                        </div>
+                    </div>
+                    <div id="gpu-lt" class="product-card" data-operator="unicom" data-category="computing">
+                        <!-- Header -->
+                        <div class="bg-red-50 px-5 py-3 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-medium text-red-800">节点 U-GPU01</span>
+                                <span class="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">可用 2/8</span>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">GPU 云服务器 (联通)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">显存</span><span class="font-medium text-gray-800">32GB (HBM2)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">CPU</span><span class="font-medium text-gray-800">Intel Xeon Gold 8-Core</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">内存</span><span class="font-medium text-gray-800">128GB</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">AI 训练, 深度学习</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 5.99 <span class="text-xs text-gray-500 font-normal">/GPU*小时</span></span>
+                                <span class="block text-xs text-gray-400 line-through">¥ 7.99</span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                2卡可租
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 
+                      ==== 存储产品 ==== (也更新为新样式)
+                    -->
+                    <!-- 电信 -->
+                    <div id="oss" class="product-card" data-operator="telecom" data-category="storage">
+                        <!-- Header -->
+                        <div class="bg-blue-50 px-5 py-3 border-b border-gray-200">
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">对象存储 OSS (电信)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">可靠性</span><span class="font-medium text-gray-800">99.9999999999%</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">类型</span><span class="font-medium text-gray-800">海量, 低成本</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">数据备份, 网站托管</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 0.09 <span class="text-xs text-gray-500 font-normal">/GB*月</span></span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                查看详情
+                            </button>
+                        </div>
+                    </div>
+                    <div id="bss" class="product-card" data-operator="telecom" data-category="storage">
+                        <!-- Header -->
+                        <div class="bg-blue-50 px-5 py-3 border-b border-gray-200">
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">云硬盘 BSS (电信)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">类型</span><span class="font-medium text-gray-800">块存储 (SSD)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">挂载</span><span class="font-medium text-gray-800">随 ECS 挂载</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">数据库, 文件系统</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 0.30 <span class="text-xs text-gray-500 font-normal">/GB*月</span></span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                查看详情
+                            </button>
+                        </div>
+                    </div>
+                    <div id="brd" class="product-card" data-operator="telecom" data-category="storage">
+                        <!-- Header -->
+                        <div class="bg-blue-50 px-5 py-3 border-b border-gray-200">
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">蓝光存储 BRD (电信)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">类型</span><span class="font-medium text-gray-800">归档存储 (冷)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">冷数据归档, Bero</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 0.03 <span class="text-xs text-gray-500 font-normal">/GB*月</span></span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                查看详情
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 移动 -->
+                    <div id="oos" class="product-card" data-operator="mobile" data-category="storage">
+                        <!-- Header -->
+                        <div class="bg-green-50 px-5 py-3 border-b border-gray-200">
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">对象存储 OOS (移动)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">可靠性</span><span class="font-medium text-gray-800">99.999999999% (11个9)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">数据备份, 归档</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 0.08 <span class="text-xs text-gray-500 font-normal">/GB*月</span></span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                查看详情
+                            </button>
+                        </div>
+                    </div>
+                    <div id="evs" class="product-card" data-operator="mobile" data-category="storage">
+                        <!-- Header -->
+                        <div class="bg-green-50 px-5 py-3 border-b border-gray-200">
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">云硬盘 EVS (移动)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">类型</span><span class="font-medium text-gray-800">块存储 (高性能)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">高 IOPS, 数据库</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 0.35 <span class="text-xs text-gray-500 font-normal">/GB*月</span></span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                查看详情
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 联通 -->
+                    <div id="vos" class="product-card" data-operator="unicom" data-category="storage">
+                        <!-- Header -->
+                        <div class="bg-orange-50 px-5 py-3 border-b border-gray-200">
+                            <h4 class="text-lg font-bold text-gray-900 mt-1">对象存储 VOS (联通)</h4>
+                        </div>
+                        <!-- Body (Specs) -->
+                        <div class="p-5">
+                            <ul class="space-y-2.5 text-sm">
+                                <li class="flex justify-between"><span class="text-gray-500">可靠性</span><span class="font-medium text-gray-800">99.999% (5个9)</span></li>
+                                <li class="flex justify-between"><span class="text-gray-500">场景</span><span class="font-medium text-gray-800">高可用, 扩展存储</span></li>
+                            </ul>
+                        </div>
+                        <!-- Footer (Price & Action) -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div>
+                                <span class="text-lg font-bold text-orange-500">¥ 0.08 <span class="text-xs text-gray-500 font-normal">/GB*月</span></span>
+                            </div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">
+                                查看详情
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 
+                      ==== 网络产品 ==== (也更新为新样式)
+                    -->
+                    <!-- 电信 -->
+                    <div id="vpc-dx" class="product-card" data-operator="telecom" data-category="network">
+                        <div class="bg-blue-50 px-5 py-3 border-b border-gray-200"><h4 class="text-lg font-bold text-gray-900 mt-1">专有网络 VPC (电信)</h4></div>
+                        <div class="p-5"><p class="text-gray-600 text-sm">帮您构建隔离的、私密的云上网络环境，可自定义网段、路由表。</p></div>
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-800">免费</span>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">查看详情</button>
+                        </div>
+                    </div>
+                    <div id="slb-dx" class="product-card" data-operator="telecom" data-category="network">
+                        <div class="bg-blue-50 px-5 py-3 border-b border-gray-200"><h4 class="text-lg font-bold text-gray-900 mt-1">负载均衡 SLB (电信)</h4></div>
+                        <div class="p-5"><p class="text-gray-600 text-sm">对多台云服务器进行流量分发，提高应用可用性和容灾能力。</p></div>
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div><span class="text-lg font-bold text-orange-500">¥ 0.02 <span class="text-xs text-gray-500 font-normal">/小时</span></span></div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">查看详情</button>
+                        </div>
+                    </div>
+
+                    <!-- 移动 -->
+                    <div id="vpc-yd" class="product-card" data-operator="mobile" data-category="network">
+                        <div class="bg-green-50 px-5 py-3 border-b border-gray-200"><h4 class="text-lg font-bold text-gray-900 mt-1">虚拟私有云 VPC (移动)</h4></div>
+                        <div class="p-5"><p class="text-gray-600 text-sm">中国移动的私有网络服务，提供安全组和网络ACL控制。</p></div>
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-800">免费</span>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">查看详情</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 联通 -->
+                    <div id="elb-lt" class="product-card" data-operator="unicom" data-category="network">
+                        <div class="bg-orange-50 px-5 py-3 border-b border-gray-200"><h4 class="text-lg font-bold text-gray-900 mt-1">弹性负载均衡 ELB (联通)</h4></div>
+                        <div class="p-5"><p class="text-gray-600 text-sm">中国联通的负载均衡服务，支持四层和七层流量转发。</p></div>
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <div><span class="text-lg font-bold text-orange-500">¥ 0.02 <span class="text-xs text-gray-500 font-normal">/小时</span></span></div>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">查看详情</button>
+                        </div>
+                    </div>
+
+                    <!-- 
+                      ==== 调度平台 ==== (也更新为新样式)
+                    -->
+                    <!-- 电信 -->
+                    <div id="ai-dx" class="product-card" data-operator="telecom" data-category="platform">
+                        <div class="bg-blue-50 px-5 py-3 border-b border-gray-200"><h4 class="text-lg font-bold text-gray-900 mt-1">AI 调度平台 (电信)</h4></div>
+                        <div class="p-5"><p class="text-gray-600 text-sm">针对 AI 训练和推理任务的智能算力调度平台。</p></div>
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-800">按需咨询</span>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">联系我们</button>
+                        </div>
+                    </div>
+                    <!-- 移动 -->
+                    <div id="sd-yd" class="product-card" data-operator="mobile" data-category="platform">
+                        <div class="bg-green-50 px-5 py-3 border-b border-gray-200"><h4 class="text-lg font-bold text-gray-900 mt-1">算力调度平台 (移动)</h4></div>
+                        <div class="p-5"><p class="text-gray-600 text-sm">中国移动的统一算力调度与纳管平台，支持混合云调度。</p></div>
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-800">按需咨询</span>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">联系我们</button>
+                        </div>
+                    </div>
+                    <!-- 联通 -->
+                    <div id="mcp-lt" class="product-card" data-operator="unicom" data-category="platform">
+                        <div class="bg-orange-50 px-5 py-3 border-b border-gray-200"><h4 class="text-lg font-bold text-gray-900 mt-1">多云管理平台 (联通)</h4></div>
+                        <div class="p-5"><p class="text-gray-600 text-sm">中国联通提供的多云、混合云统一管理解决方案。</p></div>
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-800">按需咨询</span>
+                            <button class="bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700">联系我们</button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 空状态提示 -->
+                <div id="empty-state" class="hidden text-center py-12">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 10l.01.01" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">暂无产品</h3>
+                    <p class="mt-1 text-sm text-gray-500">该分类下暂未接入产品，请尝试其他分类。</p>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // --- 核心 JS 逻辑 ---
+
+        // 存储当前激活的 Tab 状态
+        let currentOperator = 'telecom';
+        let currentCategory = 'computing';
+
+        /**
+         * 高亮节点及其连接线
+         * @param {string} nodeId - 节点ID (telecom, mobile, unicom, fujian, ningxia)
+         */
+        function highlightNode(nodeId) {
+            const mapContainer = document.getElementById('power-distribution-map');
+            const allNodes = document.querySelectorAll('.power-node');
+            const allLines = document.querySelectorAll('.power-connection-line');
+            const allLegendItems = document.querySelectorAll('.power-legend-item');
+
+            // 清除所有高亮
+            allNodes.forEach(node => node.classList.remove('highlighted'));
+            allLines.forEach(line => line.classList.remove('highlighted'));
+            allLegendItems.forEach(item => item.classList.remove('active'));
+            mapContainer.classList.remove('dimmed');
+
+            // 高亮选中的节点
+            const selectedNode = document.getElementById(`node-${nodeId}`);
+            if (selectedNode) {
+                selectedNode.classList.add('highlighted');
+                mapContainer.classList.add('dimmed');
+
+                // 高亮对应的图例项
+                const legendItem = document.querySelector(`[data-node-id="${nodeId}"]`);
+                if (legendItem) {
+                    legendItem.classList.add('active');
+                }
+
+                // 根据节点ID高亮相关连接线
+                switch(nodeId) {
+                    case 'telecom':
+                        document.getElementById('line-telecom-fujian')?.classList.add('highlighted');
+                        break;
+                    case 'mobile':
+                        document.getElementById('line-mobile-fujian')?.classList.add('highlighted');
+                        break;
+                    case 'unicom':
+                        document.getElementById('line-unicom-fujian')?.classList.add('highlighted');
+                        break;
+                    case 'more':
+                        document.getElementById('line-more-fujian')?.classList.add('highlighted');
+                        break;
+                    case 'fujian':
+                        // 福建连接到所有运营商、更多节点和宁夏
+                        document.getElementById('line-telecom-fujian')?.classList.add('highlighted');
+                        document.getElementById('line-mobile-fujian')?.classList.add('highlighted');
+                        document.getElementById('line-unicom-fujian')?.classList.add('highlighted');
+                        document.getElementById('line-more-fujian')?.classList.add('highlighted');
+                        document.getElementById('line-fujian-ningxia')?.classList.add('highlighted');
+                        break;
+                    case 'ningxia':
+                        document.getElementById('line-fujian-ningxia')?.classList.add('highlighted');
+                        // 也高亮福建节点，因为宁夏通过福建连接
+                        document.getElementById('node-fujian')?.classList.add('highlighted');
+                        break;
+                }
+            }
+        }
+
+        /**
+         * 切换运营商 Tab
+         * @param {Event} evt - 点击事件
+         * @param {string} operatorName - 运营商标识 (telecom, mobile, unicom)
+         */
+        function openOperator(evt, operatorName) {
+            // 1. 更新按钮样式
+            const operatorTabs = document.querySelectorAll('.operator-tab');
+            operatorTabs.forEach(tab => {
+                tab.classList.remove('active');
+                // 恢复非激活状态的文字和背景
+                tab.classList.add('text-gray-600', 'hover:bg-gray-200');
+            });
+            evt.currentTarget.classList.add('active');
+            evt.currentTarget.classList.remove('text-gray-600', 'hover:bg-gray-200');
+
+            // 2. 更新状态
+            currentOperator = operatorName;
+
+            // 3. 重新过滤产品
+            filterProducts();
+        }
+
+        /**
+         * 切换产品分类 Tab
+         * @param {Event} evt - 点击事件
+         * @param {string} categoryName - 分类标识 (computing, storage, network, platform, all)
+         */
+        function openCategory(evt, categoryName) {
+            // 1. 更新按钮样式
+            const categoryTabs = document.querySelectorAll('.category-tab');
+            categoryTabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            evt.currentTarget.classList.add('active');
+
+            // 2. 更新状态
+            currentCategory = categoryName;
+
+            // 3. 重新过滤产品
+            filterProducts();
+        }
+
+        /**
+         * 核心过滤函数
+         * 根据 currentOperator 和 currentCategory 来显示/隐藏产品卡片
+         */
+        function filterProducts() {
+            const allCards = document.querySelectorAll('.product-card');
+            const emptyState = document.getElementById('empty-state');
+            let visibleCardCount = 0;
+
+            allCards.forEach(card => {
+                const op = card.dataset.operator;
+                const cat = card.dataset.category;
+
+                // 检查是否匹配
+                // 1. 运营商必须匹配
+                // 2. 产品分类必须匹配，或者当前分类是 'all'
+                const isOperatorMatch = (op === currentOperator);
+                const isCategoryMatch = (cat === currentCategory || currentCategory === 'all');
+
+                if (isOperatorMatch && isCategoryMatch) {
+                    card.classList.remove('hidden');
+                    visibleCardCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            // 检查是否显示"空状态"
+            if (visibleCardCount === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+        }
+
+        // --- 页面加载时 ---
+        // 确保在 DOM 加载完成后运行
+        document.addEventListener('DOMContentLoaded', () => {
+            // 立即执行一次过滤，以显示默认状态 (telecom + computing)
+            filterProducts();
+        });
+
+    </script>
+
+</body>
+</html>
